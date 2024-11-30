@@ -1,33 +1,31 @@
 package com.be.parrotalk.login.dto;
 
 import com.be.parrotalk.login.domain.ProviderType;
+import lombok.Getter;
 
 import java.util.Map;
 
+@Getter
 public class OAuth2Response {
 
-    private final Map<String, Object> attribute;
+    private String email;
+    private String nickName;
+    private String profileImage;
+    private ProviderType provide;
 
-    public OAuth2Response(Map<String, Object> attribute) {
-        this.attribute = (Map<String, Object>) attribute.get("kakao_account");
+    public OAuth2Response(Map<String, Object> attributes) {
+        if (attributes.containsKey("kakao_account")) { // Kakao
+            Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+            this.email = (String) kakaoAccount.get("email");
+            Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+            this.nickName = (String) profile.get("nickname");
+            this.profileImage = (String) profile.get("profile_image_url");
+            this.provide = ProviderType.KAKAO;
+        } else if (attributes.containsKey("email")) { // Google
+            this.email = (String) attributes.get("email");
+            this.nickName = (String) attributes.get("name");
+            this.profileImage = (String) attributes.get("picture");
+            this.provide = ProviderType.GOOGLE;
+        }
     }
-
-    public ProviderType getProvider() {
-        return ProviderType.KAKAO;
-    }
-
-    public String getEmail() {
-        return attribute.get("email").toString();
-    }
-
-    public String getNickName() {
-        Map<String, Object> profile = (Map<String, Object>) attribute.get("profile");
-        return profile.get("nickname").toString();
-    }
-
-    public String getProfileImage() {
-        Map<String, Object> profile = (Map<String, Object>) attribute.get("profile");
-        return profile.get("profile_image_url").toString();
-    }
-
 }
