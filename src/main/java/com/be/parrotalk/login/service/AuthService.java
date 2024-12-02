@@ -5,10 +5,13 @@ import com.be.parrotalk.login.domain.User;
 import com.be.parrotalk.login.dto.CustomOAuth2User;
 import com.be.parrotalk.login.dto.TokenResponseDto;
 import com.be.parrotalk.login.security.JwtTokenProvider;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -89,5 +92,45 @@ public class AuthService {
     private boolean isSecureEnvironment() {
         // 개발/운영 환경 분리
         return "production".equals(System.getenv("ENV"));
+    }
+
+    public TokenResponseDto reissueAccess(String refresh, HttpServletResponse response) {
+
+
+        String userId = jwtTokenProvider.getUserId(refresh);
+
+        // 새로운 JWT 생성
+        String newAccess = jwtTokenProvider.createAccessToken(userId);
+
+        // 응답 설정
+        response.setHeader("Authorization", "Bearer " + newAccess);
+
+        return new TokenResponseDto(newAccess, refresh, null);
+    }
+
+    public ResponseEntity<String> validateRefreshToken(String refresh) {
+        //refresh null check
+        if (refresh == null) {
+            return new ResponseEntity<>("refresh value null", HttpStatus.BAD_REQUEST);
+        }
+
+        // expired check
+        try {
+            jwtTokenProvider.isTokenExpired(refresh);
+        } catch (ExpiredJwtException e) {
+            return new ResponseEntity<>("refresh token expired", HttpStatus.BAD_REQUEST);
+        }
+
+        //db check
+        String userId = jwtTokenProvider.getUserId(refresh);
+        String storedRefreshToken = redisService.getRefreshToken(userId);
+        if (storedRefreshToken == null || !storedRefreshToken.equals(refresh)) {
+            if (!storedRefreshToken.equals(refresh)) {
+                redisService.deleteRefreshToken(storedRefreshToken);
+            }
+            return new ResponseEntity<>("refresh db check", HttpStatus.BAD_REQUEST);
+        }
+
+        return null; // 유효성 검사를 통과한 경우 null 반환
     }
 }

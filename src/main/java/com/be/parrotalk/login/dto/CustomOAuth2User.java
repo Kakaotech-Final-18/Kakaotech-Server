@@ -1,5 +1,6 @@
 package com.be.parrotalk.login.dto;
 
+import com.be.parrotalk.login.domain.User;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,7 +13,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CustomOAuth2User implements OAuth2User {
 
-    private final UserDTO userDTO;
+    private final User user;
 
     @Override
     public Map<String, Object> getAttributes() {
@@ -26,10 +27,10 @@ public class CustomOAuth2User implements OAuth2User {
 
     @Override
     public String getName() {
-        return userDTO.getNickname();
+        return user.getNickname();
     }
 
     public Long getUserId() {
-        return userDTO.getId();
+        return user.getId();
     }
 }

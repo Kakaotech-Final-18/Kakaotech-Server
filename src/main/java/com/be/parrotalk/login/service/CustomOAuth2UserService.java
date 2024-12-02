@@ -5,7 +5,6 @@ import com.be.parrotalk.login.domain.ProviderType;
 import com.be.parrotalk.login.domain.User;
 import com.be.parrotalk.login.dto.CustomOAuth2User;
 import com.be.parrotalk.login.dto.OAuth2Response;
-import com.be.parrotalk.login.dto.UserDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -46,8 +45,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         User user = userRepository.findByEmail(oAuth2Response.getEmail())
                 .orElseGet(() -> createUser(oAuth2Response, registrationId));
 
-        UserDTO userDTO = convertToDTO(user);
-        return new CustomOAuth2User(userDTO);
+        return new CustomOAuth2User(user);
     }
 
     /**
@@ -61,18 +59,5 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 .profileImage(oAuth2Response.getProfileImage())
                 .build();
         return userRepository.save(user);
-    }
-
-    /**
-     * User -> UserDTO 변환
-     */
-    private UserDTO convertToDTO(User user) {
-        return UserDTO.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .nickname(user.getNickname())
-                .provider(user.getProvider())
-                .profileImage(user.getProfileImage())
-                .build();
     }
 }

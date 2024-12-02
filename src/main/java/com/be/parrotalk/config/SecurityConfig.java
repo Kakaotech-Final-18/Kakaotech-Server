@@ -7,6 +7,7 @@ import com.be.parrotalk.login.security.JwtTokenProvider;
 import com.be.parrotalk.login.service.CustomOAuth2UserService;
 import com.be.parrotalk.login.service.RedisService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,6 +21,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Collections;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -30,6 +32,9 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final RedisService redisService;
     private final CustomSuccessHandler customSuccessHandler;
+
+    @Value("${ngrok.url}")
+    private String ngrokUrl;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -45,7 +50,7 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler(customSuccessHandler) // OAuth2 성공 핸들러
                 )
-                .addFilterAfter(new JwtAuthenticationFilter(jwtTokenProvider), OAuth2LoginAuthenticationFilter.class) // JWT 인증 필터
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), OAuth2LoginAuthenticationFilter.class) // JWT 인증 필터
                 .addFilterBefore(new CustomLogoutFilter(jwtTokenProvider, redisService), LogoutFilter.class) // 커스텀 로그아웃 필터
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())); // CORS 설정
 
@@ -55,23 +60,23 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
-        configuration.setAllowedMethods(Collections.singletonList("*"));
-        configuration.setAllowCredentials(true);
-        configuration.setAllowedHeaders(Collections.singletonList("*"));
-        configuration.setMaxAge(3600L);
-        configuration.setExposedHeaders(Collections.singletonList("access"));
+        configuration.setAllowedOrigins(List.of("http://localhost:8080", ngrokUrl));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowCredentials(true); // 쿠키 허용
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
+
     private static final String[] WHITE_LIST_URL = {
         "/", "/index",
         "/login/oauth2/code/**",
         "/oauth2/**",
-        "/refresh",
+        "/api/v1/auth/access",
 
         // swagger
         "/v3/api-docs/**",
