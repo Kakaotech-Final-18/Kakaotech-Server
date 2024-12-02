@@ -77,6 +77,7 @@ public class SecurityConfig {
         "/login/oauth2/code/**",
         "/oauth2/**",
         "/api/v1/auth/access",
+            "/favicon.ico",
 
         // swagger
         "/v3/api-docs/**",

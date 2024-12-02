@@ -1,6 +1,4 @@
 spring:
-  config:
-    import: optional:file:.env[.properties]
   security:
     oauth2:
       client:
@@ -8,7 +6,7 @@ spring:
           kakao:
             client-id: ${CLIENT_ID}
             client-secret: ${CLIENT_SECRET}
-            redirect-uri: http://localhost:8080/login/oauth2/code/kakao
+            redirect-uri: ${REDIRECT_URL}
             authorization-grant-type: authorization_code
             scope:
               - profile_nickname
@@ -37,7 +35,7 @@ spring:
             user-info-uri: https://openidconnect.googleapis.com/v1/userinfo
             user-name-attribute: sub
   datasource:
-    url: jdbc:mysql://localhost:3306/parrotalk
+    url: ${DATABASE_URL}
     username: ${DATABASE_ID}
     password: ${DATABASE_PW}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -47,6 +45,11 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 60000
 
 jwt:
   secret: ${JWT_SECRET}
