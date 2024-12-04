@@ -4,7 +4,6 @@ import com.be.parrotalk.login.dto.TokenResponseDto;
 import com.be.parrotalk.login.service.AuthService;
 import com.be.parrotalk.login.service.RedisService;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +26,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final AuthService authService;
     private final RedisService redisService;
 
-    @Value("${ngrok.url}")
-    private String ngrokUrl;
+    @Value("${front.url}")
+    private String frontUrl;
 
     @Value("${jwt.refresh-token-validity}")
     private long refreshTokenExpirationTime;
@@ -44,44 +43,27 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // RefreshToken을 쿠키에 저장
         createCookie("refresh", tokenResponse.getRefreshToken(), (int) refreshTokenExpirationTime, response, request);
 
-//        // Access Token을 응답 헤더에 추가
-        response.setHeader("Authorization", "Bearer " + tokenResponse.getAccessToken());
-
         // 클라이언트가 적절한 경로로 리다이렉트
-        String redirectUrl = ngrokUrl + "/call/home?userId=" + tokenResponse.getUserInfo().getId().toString();
+        String redirectUrl = frontUrl + "/call/home";
 
-//        log.info("로그인 성공, 리다이렉트 URL: {}", redirectUrl);
         getRedirectStrategy().sendRedirect(request, response, redirectUrl);
 
     }
 
 
     public void createCookie(String key, String value, int maxAge, HttpServletResponse response, HttpServletRequest request) {
-        ResponseCookie cookie;
-        String cookieDomain = request.getServerName().contains("localhost") ? "localhost" : "b0b1-14-138-221-58.ngrok-free.app";
-        System.out.println(cookieDomain);
-        if(cookieDomain.equals("localhost")){
-            cookie = ResponseCookie.from(key, value)
-                    .domain(cookieDomain)
-                    .path("/")
-                    .httpOnly(true)
-                    .maxAge(maxAge)
-                    .build();
-        }
-        else {
-            cookie = ResponseCookie.from(key, value)
-                    .domain(cookieDomain)
-                    .path("/")
-                    .httpOnly(true)
-                    .maxAge(maxAge)
-                    .secure(true)
-                    .sameSite("None")
-                    .build();
-        }
+        ResponseCookie cookie = ResponseCookie.from(key, value)
+                .path("/")
+                .httpOnly(true)
+                .maxAge(maxAge)
+                .secure(isSecureEnvironment()) // HTTPS 사용 시 Secure=true
+//                .sameSite("None") // Cross-Domain 시 None 필요
+                .build();
 
         // 응답에 Set-Cookie 헤더로 추가
         response.addHeader("Set-Cookie", cookie.toString());
     }
+
 
     private boolean isSecureEnvironment() {
         // 개발/운영 환경 분리

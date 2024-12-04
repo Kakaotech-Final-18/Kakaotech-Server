@@ -7,6 +7,7 @@ import com.be.parrotalk.login.dto.TokenResponseDto;
 import com.be.parrotalk.login.security.JwtTokenProvider;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +56,8 @@ public class AuthService {
     /**
      * Refresh Token을 사용하여 새로운 Access Token 발급
      */
-    public void refreshJwtTokens(HttpServletResponse response, String refreshToken) {
+    public void refreshJwtTokens(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = getRefreshTokenInCookie(request);
         String userId = jwtTokenProvider.getUserId(refreshToken);
 
         // Refresh Token이 Redis에 존재하는지 확인
@@ -132,5 +134,38 @@ public class AuthService {
         }
 
         return null; // 유효성 검사를 통과한 경우 null 반환
+    }
+
+    public String processAccessTokenRefresh(HttpServletRequest request, HttpServletResponse response) {
+        // Refresh Token 쿠키 가져오기
+        String refreshToken = getRefreshTokenInCookie(request);
+
+        if (refreshToken == null) {
+            throw new IllegalArgumentException("Refresh token not found.");
+        }
+
+        // Refresh Token 검증
+        validateRefreshToken(refreshToken);
+
+        // Access Token 생성
+        TokenResponseDto tokenResponse = reissueAccess(refreshToken, response);
+
+        return tokenResponse.getAccessToken();
+    }
+
+    private static String getRefreshTokenInCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            throw new IllegalArgumentException("No cookies found.");
+        }
+
+        String refreshToken = null;
+        for (Cookie cookie : cookies) {
+            if ("refresh".equals(cookie.getName())) {
+                refreshToken = cookie.getValue();
+                break;
+            }
+        }
+        return refreshToken;
     }
 }

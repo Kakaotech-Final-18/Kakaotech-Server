@@ -1,4 +1,4 @@
-package com.be.parrotalk.login.domain;
+package com.be.parrotalk.login.util;
 
 public enum ProviderType {
     KAKAO,

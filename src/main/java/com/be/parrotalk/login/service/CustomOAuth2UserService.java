@@ -1,7 +1,11 @@
 package com.be.parrotalk.login.service;
 
 import com.be.parrotalk.login.UserRepository;
-import com.be.parrotalk.login.domain.ProviderType;
+import com.be.parrotalk.login.strategy.GoogleUserInfoStrategy;
+import com.be.parrotalk.login.strategy.KakaoUserInfoStrategy;
+import com.be.parrotalk.login.strategy.OAuth2UserInfoContext;
+import com.be.parrotalk.login.strategy.OAuth2UserInfoStrategy;
+import com.be.parrotalk.login.util.ProviderType;
 import com.be.parrotalk.login.domain.User;
 import com.be.parrotalk.login.dto.CustomOAuth2User;
 import com.be.parrotalk.login.dto.OAuth2Response;
@@ -28,13 +32,19 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
+        OAuth2User oAuth2User = super.loadUser(userRequest);
 
-        if (!KAKAO_REGISTRATION_ID.equals(registrationId) && !GOOGLE_REGISTRATION_ID.equals(registrationId)) {
-            log.error("지원되지 않는 registrationId: {}", registrationId);
+        OAuth2UserInfoStrategy strategy;
+        if (KAKAO_REGISTRATION_ID.equals(registrationId)) {
+            strategy = new KakaoUserInfoStrategy();
+        }  else if (GOOGLE_REGISTRATION_ID.equals(registrationId)) {
+            strategy = new GoogleUserInfoStrategy();
+        } else {
             throw new OAuth2AuthenticationException("잘못된 registration id 입니다.");
         }
-        OAuth2User oAuth2User = super.loadUser(userRequest);
-        OAuth2Response oAuth2Response = new OAuth2Response(oAuth2User.getAttributes());
+        OAuth2UserInfoContext context = new OAuth2UserInfoContext(strategy);
+        OAuth2Response oAuth2Response = context.extractUserInfo(oAuth2User.getAttributes());
+
         return processUser(oAuth2Response, registrationId);
     }
 

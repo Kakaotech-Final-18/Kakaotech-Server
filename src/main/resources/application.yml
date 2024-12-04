@@ -6,7 +6,7 @@ spring:
           kakao:
             client-id: ${CLIENT_ID}
             client-secret: ${CLIENT_SECRET}
-            redirect-uri: ${REDIRECT_URL}
+            redirect-uri: ${KAKAO_REDIRECT_URL}
             authorization-grant-type: authorization_code
             scope:
               - profile_nickname
@@ -17,7 +17,7 @@ spring:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri: http://localhost:8080/login/oauth2/code/google
+            redirect-uri: ${GOOGLE_REDIRECT_URL}
             authorization-grant-type: authorization_code
             scope:
               - email
@@ -60,5 +60,5 @@ logging:
   level:
     org.springframework.security: DEBUG
 
-ngrok:
-  url: ${NGROK_URL}
+front:
+  url: ${FRONT_URL}
