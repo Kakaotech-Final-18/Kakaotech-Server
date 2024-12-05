@@ -2,6 +2,7 @@ package com.be.parrotalk.room_user_detail.domain;
 
 import com.be.parrotalk.login.domain.User;
 import com.be.parrotalk.room_user_detail.domain.RoomUserDetailId;
+import com.be.parrotalk.room_user_detail.util.TodoStatus;
 import com.be.parrotalk.talk.domain.Talks;
 import com.be.parrotalk.todo.domain.Todos;
 import jakarta.persistence.*;
@@ -29,8 +30,9 @@ public class RoomUserDetail {
     @Column(name = "talk_id")
     private Long talkId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "todo_status", length = 255, nullable = false)
-    private String todoStatus;
+    private TodoStatus todoStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)

@@ -2,6 +2,7 @@ package com.be.parrotalk.talk.controller;
 
 import com.be.parrotalk.login.security.JwtTokenProvider;
 import com.be.parrotalk.talk.dto.CreateTalkRequest;
+import com.be.parrotalk.talk.dto.ReceiverInfoResponse;
 import com.be.parrotalk.talk.dto.UpdateReceiverRequest;
 import com.be.parrotalk.talk.service.TalkService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,15 +49,16 @@ public class TalkController {
     @PostMapping("/peer")
     public ResponseEntity<?> updateReceiver(@RequestBody UpdateReceiverRequest updateReceiverRequest) {
         try {
-            talkService.updateReceiver(updateReceiverRequest);
-            return ResponseEntity.ok().build();
+            ReceiverInfoResponse receiverInfo = talkService.updateReceiver(updateReceiverRequest);
+            return ResponseEntity.ok(receiverInfo);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         } catch (Exception e) {
-            log.warn(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
+            log.warn("Error occurred: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
 
 
 }

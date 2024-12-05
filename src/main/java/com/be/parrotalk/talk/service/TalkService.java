@@ -5,6 +5,7 @@ import com.be.parrotalk.login.domain.User;
 import com.be.parrotalk.login.util.ProviderType;
 import com.be.parrotalk.talk.domain.Talks;
 import com.be.parrotalk.talk.dto.CreateTalkRequest;
+import com.be.parrotalk.talk.dto.ReceiverInfoResponse;
 import com.be.parrotalk.talk.dto.UpdateReceiverRequest;
 import com.be.parrotalk.talk.repository.TalkRepository;
 import com.be.parrotalk.talk.util.RoomStatus;
@@ -38,7 +39,7 @@ public class TalkService {
         return newTalk.getTalkId();
     }
 
-    public void updateReceiver(UpdateReceiverRequest updateReceiverRequest) {
+    public ReceiverInfoResponse updateReceiver(UpdateReceiverRequest updateReceiverRequest) {
         Talks talk = talkRepository.findById(updateReceiverRequest.getTalkId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 Talk입니다."));
 
@@ -49,13 +50,17 @@ public class TalkService {
                             .nickname("익명") // 고유 닉네임 생성
                             .email(updateReceiverRequest.getReceiverEmail())
                             .provider(ProviderType.NONE) // 기본 Provider 설정
-                            .profileImage("/default-profile.png") // 기본 프로필 이미지 URL
+                            .profileImage("default") // 기본 프로필 이미지 URL
                             .build();
                     return userRepository.save(newUser); // 저장 후 반환
                 });
 
         talk.setReceiver(receiver);
         talkRepository.save(talk);
+        return new ReceiverInfoResponse(
+                talk.getReceiver().getNickname(),
+                talk.getReceiver().getProfileImage()
+        );
     }
 
 }
