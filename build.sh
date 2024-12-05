@@ -19,7 +19,7 @@ set -e  # 오류 발생 시 스크립트 종료
 
 # 현재 브랜치 확인
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-BRANCH=develop
+
 if [[ "$BRANCH" != "main" && "$BRANCH" != "develop" ]]; then
     echo "현재 브랜치는 main 또는 develop이 아닙니다. 스크립트를 종료합니다."
     exit 1
