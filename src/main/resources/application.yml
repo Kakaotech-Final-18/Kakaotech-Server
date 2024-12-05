@@ -47,7 +47,7 @@ spring:
         format_sql: true
   data:
     redis:
-      host: localhost
+      host: ${REDIS_URL}
       port: 6379
       timeout: 60000
 
@@ -62,3 +62,24 @@ logging:
 
 front:
   url: ${FRONT_URL}
+
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+
+sentry:
+  dsn: ${SENTRY_DSN}
+  traces-sample-rate: 1.0
+  logging:
+    minimum-event-level: INFO
+  tags:
+    application: "ptk"
+    component: "auth-svc"
