@@ -35,19 +35,20 @@ spring:
             user-info-uri: https://openidconnect.googleapis.com/v1/userinfo
             user-name-attribute: sub
   datasource:
-    url: ${DATABASE_URL}
-    username: ${DATABASE_ID}
-    password: ${DATABASE_PW}
+    url: jdbc:mysql://${db_host}:3306/${db_name}
+    username: ${username}
+    password: ${password}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
   data:
     redis:
-      host: ${REDIS_URL}
+      host: ${redis_host}
       port: 6379
       timeout: 60000
 
