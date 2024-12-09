@@ -1,6 +1,5 @@
 package com.be.parrotalk.login.dto;
 
-
 import com.be.parrotalk.login.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;

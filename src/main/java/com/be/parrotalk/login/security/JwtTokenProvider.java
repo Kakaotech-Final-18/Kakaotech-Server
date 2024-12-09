@@ -1,5 +1,6 @@
 package com.be.parrotalk.login.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
@@ -8,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -16,6 +19,7 @@ import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.jsonwebtoken.security.Keys.*;
 
@@ -44,9 +48,11 @@ public class JwtTokenProvider {
     private String createToken(String userId, long validityInMilliseconds) {
         Date now = new Date();
         Date validity = new Date(now.getTime() + validityInMilliseconds);
+        Claims claims = Jwts.claims().setSubject(userId);
+        claims.put("roles", List.of("USER")); // 사용자 권한 정보 추가
 
         return Jwts.builder()
-                .setSubject(userId)
+                .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(validity)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -67,13 +73,36 @@ public class JwtTokenProvider {
         return createToken(userId, refreshTokenValidity);
     }
 
+    public List<GrantedAuthority> getAuthorities(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        List<String> roles = claims.get("roles", List.class); // "roles" 클레임에서 권한 정보 추출
+        return roles.stream()
+                .map(SimpleGrantedAuthority::new) // 권한 정보를 GrantedAuthority로 변환
+                .collect(Collectors.toList());
+    }
+
+
     /**
      * JWT 토큰에서 인증 정보 조회
      */
     public Authentication getAuthentication(String token) {
-        UserDetails userDetails = new User(getUserId(token), "", List.of());
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        String userId = getUserId(token); // JWT에서 사용자 ID 추출
+        List<GrantedAuthority> authorities = getAuthorities(token); // JWT에서 권한 정보 추출
+
+        // UserDetails 생성
+        User userDetails = new User(userId, "", authorities);
+        com.be.parrotalk.login.domain.User userInfo = new com.be.parrotalk.login.domain.User();
+        userInfo.setId(Long.parseLong(userId));
+
+        // Authentication 객체 생성 및 반환
+        return new UsernamePasswordAuthenticationToken(userInfo, "", userDetails.getAuthorities());
     }
+
 
     /**
      * JWT 토큰에서 사용자 ID 추출

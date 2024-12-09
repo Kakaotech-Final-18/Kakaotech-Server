@@ -1,5 +1,6 @@
 package com.be.parrotalk.login.domain;
 
+import com.be.parrotalk.login.util.ProviderType;
 import jakarta.persistence.*;
 import lombok.*;
 
