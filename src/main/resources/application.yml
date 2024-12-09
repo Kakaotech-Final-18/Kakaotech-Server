@@ -63,3 +63,24 @@ logging:
 
 front:
   url: ${FRONT_URL}
+
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+
+sentry:
+  dsn: ${SENTRY_DSN}
+  traces-sample-rate: 1.0
+  logging:
+    minimum-event-level: INFO
+  tags:
+    application: "ptk"
+    component: "auth-svc"

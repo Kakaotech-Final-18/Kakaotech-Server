@@ -33,8 +33,18 @@ out/
 /nbdist/
 /.nb-gradle/
 
+### localBuild ###
+/caches/
+/daemon/
+/jdks/
+/native/
+/wrapper/
+
 ### VS Code ###
 .vscode/
 
 ### env ###
+src/main/resources/.env
+.env.development
+.env.test
 .env
