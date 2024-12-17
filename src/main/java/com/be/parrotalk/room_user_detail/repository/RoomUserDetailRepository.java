@@ -12,4 +12,6 @@ public interface RoomUserDetailRepository extends JpaRepository<RoomUserDetail, 
     @Query("SELECT r FROM RoomUserDetail r JOIN FETCH r.talk JOIN FETCH r.todo WHERE r.userId = :userId")
     List<RoomUserDetail> findByUserId(@Param("userId") Long userId);
     Optional<RoomUserDetail> findByTalkIdAndUserIdAndTodoTitle(Long talkId, Long userId, String todoTitle);
+
+    List<RoomUserDetail> findByTalkIdAndUserId(Long talkId, Long userId);
 }
