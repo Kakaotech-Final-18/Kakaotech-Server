@@ -49,4 +49,14 @@ public class RoomUserDetailService {
                 .toList();
     }
 
+    public void deleteRoomDetailById(Long userId, Long talkId) {
+        List<RoomUserDetail> roomDetails = roomUserDetailRepository.findByTalkIdAndUserId(talkId, userId);
+
+        if (roomDetails.isEmpty()) {
+            throw new IllegalArgumentException("Invalid talkId or unauthorized user.");
+        }
+
+        roomUserDetailRepository.deleteAll(roomDetails);
+    }
+
 }
