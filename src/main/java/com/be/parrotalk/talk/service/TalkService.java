@@ -36,13 +36,16 @@ public class TalkService {
                 .build();
 
         talkRepository.save(newTalk);
+        System.out.println("[TalkService] " + newTalk.getTalkId());
         return newTalk.getTalkId();
     }
 
     public ReceiverInfoResponse updateReceiver(UpdateReceiverRequest updateReceiverRequest) {
         Talks talk = talkRepository.findById(updateReceiverRequest.getTalkId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 Talk입니다."));
-
+        if (updateReceiverRequest.getReceiverEmail() == null) {
+            throw new IllegalArgumentException("존재하지 않는 receiver email입니다.");
+        }
         User receiver = userRepository.findByEmail(updateReceiverRequest.getReceiverEmail())
                 .orElseGet(() -> {
                     // 새로운 User 객체 생성 및 저장
@@ -57,6 +60,8 @@ public class TalkService {
 
         talk.setReceiver(receiver);
         talkRepository.save(talk);
+        System.out.println("[TalkService] :: " + talk.getReceiver().getNickname());
+        System.out.println("[TalkService] :: " + talk.getReceiver().getProfileImage());
         return new ReceiverInfoResponse(
                 talk.getReceiver().getNickname(),
                 talk.getReceiver().getProfileImage()

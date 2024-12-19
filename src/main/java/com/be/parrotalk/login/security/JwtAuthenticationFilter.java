@@ -41,10 +41,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // 토큰 만료 여부 확인, 만료시 다음 필터로 넘기지 않음
-        try {
-            jwtTokenProvider.isTokenExpired(accessToken);
-        } catch (ExpiredJwtException e) {
-            throw new AuthenticationException("Access token expired"){};
+        if(jwtTokenProvider.isTokenExpired(accessToken)) {
+//            log.warn("Access token expired: {}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 상태 설정
+            response.getWriter().write("Access token expired"); // 클라이언트로 메시지 전송
+            return; // 필터 체인 중단
         }
         Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
