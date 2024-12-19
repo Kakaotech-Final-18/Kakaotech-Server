@@ -20,7 +20,6 @@ public class UserController {
 
     @GetMapping(value = "/info")
     public ResponseEntity<UserInfoDTO> getUserInfo(@AuthenticationPrincipal User user) {
-        System.out.println(user);
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
