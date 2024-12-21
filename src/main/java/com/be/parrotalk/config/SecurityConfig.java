@@ -58,7 +58,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000","https://dev.ptks.link","https://auth-dev.ptks.link","http://dev.ptks.link"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000","https://dev.ptks.link","https://auth-dev.ptks.link","http://dev.ptks.link","https://ptks.link","https://auth.ptks.link","http://ptks.link"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowCredentials(true); // 쿠키 허용
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
