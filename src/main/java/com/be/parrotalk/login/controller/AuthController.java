@@ -31,8 +31,15 @@ public class AuthController {
 
             return ResponseEntity.ok("Access token refreshed successfully.");
         } catch (IllegalArgumentException e) {
-            log.error("Invalid request: ", e);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            if ("Refresh token not found.".equals(e.getMessage())) {
+                log.info("익명 사용자 요청: Refresh Token이 없습니다.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Anonymous user. Refresh Token not found.");
+            } else {
+                // 다른 IllegalArgumentException의 경우 기존 처리
+                log.error("Invalid request: ", e);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            }
         } catch (Exception e) {
             log.error("Error while refreshing access token: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred.");
